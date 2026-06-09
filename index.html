@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda — IASD Granja Viana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3347;
+    --text: #e8eaf0;
+    --text-muted: #8b90a7;
+    --accent: #4f8ef7;
+    --accent2: #a78bfa;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --nave: #4f8ef7;
+    --salao: #a78bfa;
+    --seniores: #34d399;
+    --fixed: #4f8ef7;
+    --scheduled: #34d399;
+    --reservation: #fbbf24;
+    --pending: #fb923c;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-brand { display: flex; align-items: center; gap: 12px; }
+  .header-brand .cross {
+    width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .header-brand .cross::before, .header-brand .cross::after {
+    content: ''; position: absolute; background: var(--accent); border-radius: 2px;
+  }
+  .header-brand .cross::before { width: 4px; height: 32px; }
+  .header-brand .cross::after { width: 32px; height: 4px; }
+  .header-brand h1 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; letter-spacing: 0.3px; }
+  .header-brand span { color: var(--text-muted); font-size: 13px; }
+  .header-actions { display: flex; align-items: center; gap: 8px; }
+  .btn { padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #3a7de8; transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-success { background: var(--success); color: #064e3b; }
+  .btn-danger { background: var(--danger); color: #7f1d1d; }
+  .btn-warning { background: var(--warning); color: #78350f; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* MAIN LAYOUT */
+  .app { display: flex; height: calc(100vh - 64px); }
+  .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; overflow-y: auto; flex-shrink: 0; }
+  .main { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* SIDEBAR */
+  .sidebar-section { margin-bottom: 24px; }
+  .sidebar-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
+  .filter-btn { width: 100%; text-align: left; padding: 8px 12px; border-radius: 8px; background: transparent; border: none; color: var(--text-muted); font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.15s; margin-bottom: 2px; }
+  .filter-btn:hover { background: var(--surface2); color: var(--text); }
+  .filter-btn.active { background: var(--surface2); color: var(--text); }
+  .filter-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 4px 12px; font-size: 12px; color: var(--text-muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .mini-cal { width: 100%; }
+  .mini-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .mini-cal-title { font-size: 13px; font-weight: 500; }
+  .mini-cal-nav { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+  .mini-cal-nav:hover { background: var(--surface2); }
+  .mini-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+  .mini-cal-day-header { font-size: 10px; color: var(--text-muted); padding: 2px; }
+  .mini-cal-day { font-size: 11px; padding: 3px; border-radius: 4px; cursor: pointer; color: var(--text-muted); }
+  .mini-cal-day:hover { background: var(--surface2); color: var(--text); }
+  .mini-cal-day.today { background: var(--accent); color: white; border-radius: 50%; }
+  .mini-cal-day.has-event { color: var(--text); font-weight: 600; }
+  .mini-cal-day.selected { outline: 2px solid var(--accent); border-radius: 4px; }
+  .mini-cal-day.other-month { opacity: 0.3; }
+
+  /* CALENDAR */
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .cal-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; }
+  .cal-nav { display: flex; align-items: center; gap: 8px; }
+  .cal-nav-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.15s; }
+  .cal-nav-btn:hover { background: var(--surface2); }
+  .view-toggle { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .view-btn { padding: 7px 14px; background: none; border: none; color: var(--text-muted); font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; }
+  .view-btn.active { background: var(--accent); color: white; }
+
+  /* MONTH VIEW */
+  .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; }
+  .month-day-header { background: var(--surface); padding: 10px 8px; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: var(--text-muted); text-transform: uppercase; }
+  .month-day { background: var(--surface); min-height: 110px; padding: 8px 6px; position: relative; cursor: pointer; transition: background 0.15s; }
+  .month-day:hover { background: var(--surface2); }
+  .month-day.today { background: #1a2035; }
+  .month-day.other-month { opacity: 0.4; }
+  .month-day.weekend { background: #161820; }
+  .day-number { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .day-number.today { background: var(--accent); color: white; }
+  .day-event { font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; font-weight: 500; }
+  .day-event:hover { opacity: 0.85; filter: brightness(1.1); }
+  .more-events { font-size: 10px; color: var(--text-muted); padding: 2px 5px; cursor: pointer; }
+  .more-events:hover { color: var(--text); }
+
+  /* WEEK VIEW */
+  .week-grid { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; }
+  .week-time-header { background: var(--surface); }
+  .week-day-header { background: var(--surface); padding: 10px 8px; text-align: center; }
+  .week-day-name { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+  .week-day-num { font-size: 20px; font-weight: 700; }
+  .week-day-num.today { color: var(--accent); }
+  .week-time-slot { background: var(--surface); padding: 0 8px; height: 48px; display: flex; align-items: flex-start; padding-top: 4px; }
+  .week-time-label { font-size: 10px; color: var(--text-muted); }
+  .week-cell { background: var(--surface); height: 48px; border-top: 1px solid var(--border); position: relative; }
+  .week-cell:hover { background: var(--surface2); }
+  .week-event { position: absolute; left: 1px; right: 1px; border-radius: 4px; padding: 2px 4px; font-size: 10px; font-weight: 500; overflow: hidden; cursor: pointer; z-index: 1; }
+
+  /* EVENT MODAL */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 480px; padding: 28px; box-shadow: var(--shadow); animation: modalIn 0.2s ease; }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.3; }
+  .modal-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px; border-radius: 6px; line-height: 1; }
+  .modal-close:hover { background: var(--surface2); color: var(--text); }
+  .modal-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 16px; }
+  .modal-info { display: flex; flex-direction: column; gap: 10px; }
+  .modal-info-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .modal-info-icon { width: 20px; text-align: center; color: var(--text-muted); flex-shrink: 0; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+
+  /* FORM */
+  .form-grid { display: grid; gap: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input, .form-select, .form-textarea {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    padding: 10px 12px; transition: border-color 0.2s; width: 100%;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-select option { background: var(--surface2); }
+  .conflict-alert { background: #3d1a1a; border: 1px solid var(--danger); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--danger); margin-top: 8px; display: none; }
+  .conflict-alert.show { display: flex; gap: 8px; align-items: flex-start; }
+
+  /* PANELS */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+  .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .panel-title { font-size: 15px; font-weight: 600; }
+  .panel-body { padding: 0; }
+  .request-item { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 14px; transition: background 0.15s; }
+  .request-item:last-child { border-bottom: none; }
+  .request-item:hover { background: var(--surface2); }
+  .request-avatar { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .request-info { flex: 1; }
+  .request-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .request-details { font-size: 12px; color: var(--text-muted); }
+  .request-actions { display: flex; gap: 6px; align-items: center; }
+  .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+  .badge-pending { background: #3d2a0a; color: var(--warning); }
+  .badge-approved { background: #0a3d2a; color: var(--success); }
+  .badge-rejected { background: #3d0a0a; color: var(--danger); }
+
+  /* TABS */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .tab { padding: 12px 20px; background: none; border: none; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; position: relative; bottom: -1px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+  .tab-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: var(--pending); color: white; border-radius: 50%; font-size: 10px; font-weight: 700; margin-left: 6px; }
+
+  /* ADMIN LOGIN */
+  .login-screen { display: flex; align-items: center; justify-content: center; min-height: 400px; }
+  .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; width: 100%; max-width: 360px; text-align: center; }
+  .login-card h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 8px; }
+  .login-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+  .login-error { color: var(--danger); font-size: 12px; margin-top: 8px; display: none; }
+
+  /* TOAST */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 13px; box-shadow: var(--shadow); animation: toastIn 0.3s ease; display: flex; align-items: center; gap: 10px; min-width: 280px; }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* FLOATING BUTTON */
+  .fab { position: fixed; bottom: 28px; right: 28px; width: 56px; height: 56px; background: var(--accent); border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(79,142,247,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 99; }
+  .fab:hover { transform: scale(1.1); background: #3a7de8; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 16px; }
+    .cal-title { font-size: 20px; }
+    .month-day { min-height: 70px; }
+    .form-row { grid-template-columns: 1fr; }
+    .header-brand span { display: none; }
+    .fab { bottom: 20px; right: 20px; }
+  }
+  @media (max-width: 500px) {
+    .month-grid { grid-template-columns: repeat(7, 1fr); }
+    .month-day { padding: 4px 2px; min-height: 54px; }
+    .day-event { font-size: 8px; padding: 1px 3px; }
+  }
+
+  .hidden { display: none !important; }
+  .space-nave { border-left: 3px solid var(--nave); }
+  .space-salao { border-left: 3px solid var(--salao); }
+  .space-seniores { border-left: 3px solid var(--seniores); }
+
+  select option { color: #e8eaf0; background: #22263a; }
+  input[type="date"], input[type="time"] { color-scheme: dark; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="cross"></div>
+    <div>
+      <h1>IASD Granja Viana</h1>
+      <span>Agenda de Espaços</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div id="adminBadge" class="hidden" style="display:none">
+      <span style="font-size:12px;color:var(--success);background:#0a3d2a;padding:5px 10px;border-radius:20px;font-weight:600;">🔐 Secretaria</span>
+    </div>
+    <button class="btn btn-ghost" id="btnAdmin" onclick="toggleAdmin()">⚙️ Secretaria</button>
+    <button class="btn btn-primary" onclick="openRequestModal()">+ Solicitar Reserva</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Mini Calendar -->
+    <div class="sidebar-section">
+      <div class="mini-cal">
+        <div class="mini-cal-header">
+          <button class="mini-cal-nav" onclick="miniCalNav(-1)">‹</button>
+          <span class="mini-cal-title" id="miniCalTitle"></span>
+          <button class="mini-cal-nav" onclick="miniCalNav(1)">›</button>
+        </div>
+        <div class="mini-cal-grid" id="miniCalGrid"></div>
+      </div>
+    </div>
+
+    <!-- Filtrar por espaço -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Filtrar por Espaço</div>
+      <button class="filter-btn active" onclick="filterSpace('all', this)">
+        <span class="filter-dot" style="background:var(--text-muted)"></span> Todos os espaços
+      </button>
+      <button class="filter-btn" onclick="filterSpace('nave', this)">
+        <span class="filter-dot" style="background:var(--nave)"></span> Nave da Igreja
+      </button>
+      <button class="filter-btn" onclick="filterSpace('salao_jovens', this)">
+        <span class="filter-dot" style="background:var(--salao)"></span> Salão dos Jovens
+      </button>
+      <button class="filter-btn" onclick="filterSpace('sala_seniores', this)">
+        <span class="filter-dot" style="background:var(--seniores)"></span> Sala dos Sêniores
+      </button>
+    </div>
+
+    <!-- Legenda tipos -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Legenda</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--fixed)"></span> Evento fixo</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--scheduled)"></span> Programado (AP)</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--reservation)"></span> Reserva aprovada</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--pending)"></span> Reserva pendente</div>
+    </div>
+
+    <!-- Ir para hoje -->
+    <div class="sidebar-section">
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="goToday()">📅 Ir para hoje</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main" id="mainContent">
+    <!-- Calendar view by default -->
+    <div id="calendarView">
+      <div class="cal-header">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="navigate(-1)">‹</button>
+          <h2 class="cal-title" id="calTitle"></h2>
+          <button class="cal-nav-btn" onclick="navigate(1)">›</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="view-toggle">
+            <button class="view-btn active" id="btnMonth" onclick="setView('month')">Mês</button>
+            <button class="view-btn" id="btnWeek" onclick="setView('week')">Semana</button>
+          </div>
+        </div>
+      </div>
+      <div id="calGrid"></div>
+    </div>
+
+    <!-- Admin view -->
+    <div id="adminView" class="hidden">
+      <div class="tabs">
+        <button class="tab active" onclick="adminTab('pending', this)">Solicitações <span class="tab-badge" id="pendingCount">0</span></button>
+        <button class="tab" onclick="adminTab('all', this)">Todos os eventos</button>
+        <button class="tab" onclick="adminTab('add', this)">+ Novo evento</button>
+      </div>
+      <div id="adminTabContent"></div>
+    </div>
+  </main>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fabBtn" onclick="openRequestModal()" title="Solicitar Reserva">+</button>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- MODAL CONTAINER -->
+<div id="modalContainer"></div>
+
+<script>
+// ==================== CONFIG ====================
+const SHEET_ID = '1XJnKnqz3g1L-VvofXjU0bF8PQPT7xzKQMISj_tawJ78';
+const API_KEY = 'AIzaSyCNvYT5WKc7LdWHrQr1g6LaOcX2CesVSY0';
+const ADMIN_PASSWORD = 'secretaria2026';
+const WHATSAPP_NUMBER = '5511970148615';
+
+const SPACES = {
+  nave: { label: 'Nave da Igreja', color: '#4f8ef7' },
+  salao_jovens: { label: 'Salão dos Jovens', color: '#a78bfa' },
+  sala_seniores: { label: 'Sala dos Sêniores', color: '#34d399' }
+};
+
+const TYPE_COLORS = {
+  fixed: '#4f8ef7',
+  scheduled: '#34d399',
+  reservation: '#fbbf24',
+  pending: '#fb923c'
+};
+
+// ==================== STATE ====================
+let currentView = 'month';
+let currentDate = new Date();
+let currentFilter = 'all';
+let isAdmin = false;
+let allEvents = [];
+let reservations = [];
+let miniCalDate = new Date();
+
+// ==================== FIXED EVENTS ====================
+const FIXED_EVENTS = [
+  { id: 'f1', title: 'Culto de Sábado', department: 'Pastor / Secretaria', space: 'nave', type: 'fixed', startTime: '09:00', endTime: '12:00', weekday: 6, week: 'all' },
+  { id: 'f2', title: 'Ensaio da Orquestra', department: 'Música', space: 'nave', type: 'fixed', startTime: '17:00', endTime: '19:00', weekday: 6, week: 'all' },
+  { id: 'f3', title: 'Ensaio do Coral', department: 'Música', space: 'nave', type: 'fixed', startTime: '15:00', endTime: '17:00', weekday: 6, week: [1,3] },
+  { id: 'f4', title: 'Ensaio Coral Jovem', department: 'Música', space: 'salao_jovens', type: 'fixed', startTime: '15:00', endTime: '16:30', weekday: 6, week: [2,3,4] },
+  { id: 'f5', title: 'Reunião de Comissão', department: 'Pastor / Secretaria', space: 'salao_jovens', type: 'fixed', startTime: '14:00', endTime: '16:00', weekday: 6, week: [1] },
+  { id: 'f6', title: 'Estudos Bíblicos - Desbravadores', department: 'Desbravadores', space: 'salao_jovens', type: 'fixed', startTime: '15:00', endTime: '16:30', weekday: 6, week: [2,4] },
+  { id: 'f7', title: 'Estudos Bíblicos - ASA', department: 'ASA', space: 'salao_jovens', type: 'fixed', startTime: '15:00', endTime: '16:00', weekday: 6, week: [3] },
+  { id: 'f8', title: 'Respire Livre', department: 'Saúde', space: 'sala_seniores', type: 'fixed', startTime: '19:30', endTime: '20:30', weekday: 5, week: 'all' },
+];
+
+const SCHEDULED_EVENTS = [
+  { id: 's1', title: 'Dia do Ancionato', department: 'Ministerial', space: 'nave', type: 'scheduled', date: '2026-06-27', startTime: '09:00', endTime: '12:00' },
+  { id: 's2', title: 'Escola Cristã de Férias', department: 'MCA', space: 'salao_jovens', type: 'scheduled', date: '2026-07-01', startTime: '08:00', endTime: '17:00' },
+  { id: 's3', title: 'Dia do Colportor', department: 'Publicações', space: 'nave', type: 'scheduled', date: '2026-07-11', startTime: '09:00', endTime: '12:00' },
+  { id: 's4', title: 'Sábado Laranja - TDAH', department: 'MAP', space: 'nave', type: 'scheduled', date: '2026-07-11', startTime: '14:00', endTime: '17:00' },
+  { id: 's5', title: 'Semana de Oração JA', department: 'JA', space: 'nave', type: 'scheduled', date: '2026-07-18', startTime: '09:00', endTime: '12:00' },
+  { id: 's6', title: 'Dia dos Avós', department: '60+', space: 'nave', type: 'scheduled', date: '2026-07-25', startTime: '09:00', endTime: '12:00' },
+  { id: 's7', title: 'Dia da ASA - Batismos', department: 'ASA', space: 'nave', type: 'scheduled', date: '2026-08-01', startTime: '09:00', endTime: '12:00' },
+  { id: 's8', title: 'Quebrando o Silêncio', department: 'Min. da Mulher', space: 'nave', type: 'scheduled', date: '2026-08-22', startTime: '09:00', endTime: '12:00' },
+  { id: 's9', title: 'Sábado de Mordomia', department: 'Mordomia', space: 'nave', type: 'scheduled', date: '2026-08-29', startTime: '09:00', endTime: '12:00' },
+  { id: 's10', title: 'Batismo da Primavera', department: 'Evangelismo', space: 'nave', type: 'scheduled', date: '2026-09-05', startTime: '09:00', endTime: '12:00' },
+  { id: 's11', title: 'Semana do Lenço DBV', department: 'Desbravadores', space: 'nave', type: 'scheduled', date: '2026-09-13', startTime: '09:00', endTime: '12:00' },
+  { id: 's12', title: 'Sábado do Surdo Adventista', department: 'MAP-MAS', space: 'nave', type: 'scheduled', date: '2026-09-26', startTime: '09:00', endTime: '12:00' },
+  { id: 's13', title: 'Sábado da Educação', department: 'Educação', space: 'nave', type: 'scheduled', date: '2026-10-03', startTime: '09:00', endTime: '12:00' },
+  { id: 's14', title: 'Sábado da Criança', department: 'MCA', space: 'nave', type: 'scheduled', date: '2026-10-10', startTime: '09:00', endTime: '12:00' },
+  { id: 's15', title: '174 Anos Esc. Sabatina', department: 'Escola Sabatina', space: 'nave', type: 'scheduled', date: '2026-10-17', startTime: '09:00', endTime: '12:00' },
+  { id: 's16', title: 'Sábado da Criação', department: 'Educação', space: 'nave', type: 'scheduled', date: '2026-10-24', startTime: '09:00', endTime: '12:00' },
+  { id: 's17', title: 'Dia do Espírito de Profecia', department: 'Publicações', space: 'nave', type: 'scheduled', date: '2026-11-07', startTime: '09:00', endTime: '12:00' },
+  { id: 's18', title: 'Evangelismo Reencontro', department: 'Evangelismo', space: 'nave', type: 'scheduled', date: '2026-11-21', startTime: '09:00', endTime: '20:00' },
+  { id: 's19', title: 'Trimestral Esc. Sabatina', department: 'Escola Sabatina', space: 'nave', type: 'scheduled', date: '2026-12-12', startTime: '15:00', endTime: '17:00' },
+  { id: 's20', title: 'Encerramento Mutirão de Natal', department: 'ASA', space: 'nave', type: 'scheduled', date: '2026-12-19', startTime: '09:00', endTime: '12:00' },
+  { id: 's21', title: 'Culto de Gratidão', department: 'Pastor / Secretaria', space: 'nave', type: 'scheduled', date: '2026-12-31', startTime: '19:00', endTime: '23:00' },
+];
+
+// ==================== GOOGLE SHEETS ====================
+async function loadReservations() {
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Reservas!A:J?key=${API_KEY}`;
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+    const rows = data.values || [];
+    reservations = rows.slice(1).map((r, i) => ({
+      id: 'r' + i,
+      name: r[0] || '',
+      department: r[1] || '',
+      space: r[2] || '',
+      date: r[3] || '',
+      startTime: r[4] || '',
+      endTime: r[5] || '',
+      people: r[6] || '',
+      description: r[7] || '',
+      status: r[8] || 'pending',
+      notes: r[9] || '',
+      type: (r[8] === 'approved') ? 'reservation' : 'pending',
+      title: r[7] || r[1] || 'Reserva'
+    }));
+    renderCalendar();
+    updatePendingCount();
+  } catch(e) {
+    console.log('Sheets offline, usando dados locais');
+  }
+}
+
+async function saveReservationToSheet(data) {
+  // Para escrita precisaria de OAuth - aqui salvamos localmente e enviamos via WhatsApp
+  const newRes = {
+    id: 'r' + Date.now(),
+    ...data,
+    status: 'pending',
+    type: 'pending',
+    title: data.description || data.department || 'Reserva'
+  };
+  reservations.push(newRes);
+  renderCalendar();
+  updatePendingCount();
+  return newRes;
+}
+
+async function updateReservationStatus(id, status) {
+  const res = reservations.find(r => r.id === id);
+  if (res) {
+    res.status = status;
+    res.type = status === 'approved' ? 'reservation' : 'pending';
+  }
+  renderCalendar();
+  updatePendingCount();
+  showToast(status === 'approved' ? '✅ Reserva aprovada!' : '❌ Reserva recusada.', status === 'approved' ? 'success' : 'danger');
+}
+
+// ==================== EVENT RESOLUTION ====================
+function getWeekOfMonth(date) {
+  const d = new Date(date);
+  const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+  const dayOfWeek = firstDay.getDay();
+  return Math.ceil((d.getDate() + dayOfWeek) / 7);
+}
+
+function getEventsForDate(date) {
+  const d = new Date(date);
+  const weekday = d.getDay(); // 0=dom, 6=sab
+  const weekNum = getWeekOfMonth(d);
+  const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (d < today) { /* show past events too */ }
+
+  const events = [];
+
+  // Fixed events
+  FIXED_EVENTS.forEach(ev => {
+    if (ev.weekday !== weekday) return;
+    if (ev.week !== 'all' && !ev.week.includes(weekNum)) return;
+    if (currentFilter !== 'all' && ev.space !== currentFilter) return;
+    events.push({ ...ev, dateStr });
+  });
+
+  // Scheduled events
+  SCHEDULED_EVENTS.forEach(ev => {
+    if (ev.date !== dateStr) return;
+    if (currentFilter !== 'all' && ev.space !== currentFilter) return;
+    events.push({ ...ev, dateStr });
+  });
+
+  // Reservations
+  reservations.forEach(ev => {
+    if (ev.date !== dateStr) return;
+    if (currentFilter !== 'all' && ev.space !== currentFilter) return;
+    events.push({ ...ev, dateStr });
+  });
+
+  return events;
+}
+
+function getEventColor(ev) {
+  if (ev.type === 'fixed') return TYPE_COLORS.fixed;
+  if (ev.type === 'scheduled') return TYPE_COLORS.scheduled;
+  if (ev.status === 'pending') return TYPE_COLORS.pending;
+  return TYPE_COLORS.reservation;
+}
+
+function checkConflict(space, date, startTime, endTime, excludeId) {
+  const conflicts = [];
+  const newStart = timeToMin(startTime);
+  const newEnd = timeToMin(endTime);
+  const d = new Date(date + 'T12:00:00');
+  const weekday = d.getDay();
+  const weekNum = getWeekOfMonth(d);
+
+  FIXED_EVENTS.forEach(ev => {
+    if (ev.space !== space) return;
+    if (ev.weekday !== weekday) return;
+    if (ev.week !== 'all' && !ev.week.includes(weekNum)) return;
+    const s = timeToMin(ev.startTime), e = timeToMin(ev.endTime);
+    if (newStart < e && newEnd > s) conflicts.push(ev.title);
+  });
+
+  SCHEDULED_EVENTS.forEach(ev => {
+    if (ev.space !== space || ev.date !== date) return;
+    const s = timeToMin(ev.startTime), e = timeToMin(ev.endTime);
+    if (newStart < e && newEnd > s) conflicts.push(ev.title);
+  });
+
+  reservations.forEach(ev => {
+    if (ev.id === excludeId || ev.space !== space || ev.date !== date) return;
+    if (ev.status === 'rejected') return;
+    const s = timeToMin(ev.startTime), e = timeToMin(ev.endTime);
+    if (newStart < e && newEnd > s) conflicts.push(ev.title);
+  });
+
+  return conflicts;
+}
+
+function timeToMin(t) {
+  if (!t) return 0;
+  const [h,m] = t.split(':').map(Number);
+  return h*60+m;
+}
+
+// ==================== CALENDAR RENDER ====================
+function renderCalendar() {
+  if (currentView === 'month') renderMonth();
+  else renderWeek();
+  renderMiniCal();
+}
+
+function renderMonth() {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('calTitle').textContent = `${months[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = new Date();
+
+  let html = '<div class="month-grid">';
+  ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(d => {
+    html += `<div class="month-day-header">${d}</div>`;
+  });
+
+  // Prev month days
+  const prevDays = new Date(year, month, 0).getDate();
+  for (let i = firstDay - 1; i >= 0; i--) {
+    html += `<div class="month-day other-month"><div class="day-number">${prevDays-i}</div></div>`;
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const isToday = date.toDateString() === today.toDateString();
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+    const events = getEventsForDate(date);
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+    html += `<div class="month-day${isToday?' today':''}${isWeekend?' weekend':''}" onclick="openDayModal('${dateStr}')">`;
+    html += `<div class="day-number${isToday?' today':''}">${day}</div>`;
+
+    const maxShow = 3;
+    events.slice(0, maxShow).forEach(ev => {
+      const color = getEventColor(ev);
+      html += `<div class="day-event" style="background:${color}22;color:${color}" onclick="event.stopPropagation();openEventModal(${JSON.stringify(JSON.stringify(ev))})" title="${ev.title} • ${ev.startTime}–${ev.endTime}">${ev.startTime} ${ev.title}</div>`;
+    });
+    if (events.length > maxShow) {
+      html += `<div class="more-events">+${events.length-maxShow} mais</div>`;
+    }
+    html += '</div>';
+  }
+
+  // Next month fill
+  const totalCells = firstDay + daysInMonth;
+  const remaining = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    html += `<div class="month-day other-month"><div class="day-number">${i}</div></div>`;
+  }
+
+  html += '</div>';
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function renderWeek() {
+  const startOfWeek = new Date(currentDate);
+  const day = startOfWeek.getDay();
+  startOfWeek.setDate(startOfWeek.getDate() - day);
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(d.getDate() + i);
+    days.push(d);
+  }
+
+  const firstDay = days[0];
+  const lastDay = days[6];
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  document.getElementById('calTitle').textContent = `${firstDay.getDate()} ${months[firstDay.getMonth()]} – ${lastDay.getDate()} ${months[lastDay.getMonth()]} ${lastDay.getFullYear()}`;
+
+  const hours = [];
+  for (let h = 6; h <= 23; h++) hours.push(h);
+  const today = new Date();
+  const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  let html = '<div class="week-grid">';
+  html += '<div class="week-time-header"></div>';
+  days.forEach((d, i) => {
+    const isToday = d.toDateString() === today.toDateString();
+    html += `<div class="week-day-header"><div class="week-day-name">${dayNames[i]}</div><div class="week-day-num${isToday?' today':''}">${d.getDate()}</div></div>`;
+  });
+
+  hours.forEach(h => {
+    html += `<div class="week-time-slot"><span class="week-time-label">${String(h).padStart(2,'0')}:00</span></div>`;
+    days.forEach(d => {
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const events = getEventsForDate(d).filter(ev => {
+        const s = timeToMin(ev.startTime);
+        return s >= h*60 && s < (h+1)*60;
+      });
+      html += `<div class="week-cell">`;
+      events.forEach(ev => {
+        const color = getEventColor(ev);
+        const dur = timeToMin(ev.endTime) - timeToMin(ev.startTime);
+        const height = Math.max(20, (dur / 60) * 48);
+        html += `<div class="week-event" style="background:${color}33;color:${color};border-left:3px solid ${color};height:${height}px" onclick="openEventModal(${JSON.stringify(JSON.stringify(ev))})" title="${ev.title}">${ev.startTime} ${ev.title}</div>`;
+      });
+      html += '</div>';
+    });
+  });
+
+  html += '</div>';
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function renderMiniCal() {
+  const year = miniCalDate.getFullYear();
+  const month = miniCalDate.getMonth();
+  const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('miniCalTitle').textContent = `${months[month].slice(0,3)} ${year}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = new Date();
+
+  let html = '';
+  ['D','S','T','Q','Q','S','S'].forEach(d => { html += `<div class="mini-cal-day-header">${d}</div>`; });
+
+  for (let i = 0; i < firstDay; i++) html += '<div></div>';
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const isToday = date.toDateString() === today.toDateString();
+    const events = getEventsForDate(date);
+    const hasEvent = events.length > 0;
+    html += `<div class="mini-cal-day${isToday?' today':''}${hasEvent?' has-event':''}" onclick="jumpToDate(${year},${month},${day})">${day}</div>`;
+  }
+
+  document.getElementById('miniCalGrid').innerHTML = html;
+}
+
+// ==================== NAVIGATION ====================
+function navigate(dir) {
+  if (currentView === 'month') {
+    currentDate.setMonth(currentDate.getMonth() + dir);
+  } else {
+    currentDate.setDate(currentDate.getDate() + dir * 7);
+  }
+  renderCalendar();
+}
+
+function miniCalNav(dir) {
+  miniCalDate.setMonth(miniCalDate.getMonth() + dir);
+  renderMiniCal();
+}
+
+function jumpToDate(y, m, d) {
+  currentDate = new Date(y, m, d);
+  miniCalDate = new Date(y, m, d);
+  renderCalendar();
+}
+
+function goToday() {
+  currentDate = new Date();
+  miniCalDate = new Date();
+  renderCalendar();
+}
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('btnMonth').classList.toggle('active', v === 'month');
+  document.getElementById('btnWeek').classList.toggle('active', v === 'week');
+  renderCalendar();
+}
+
+function filterSpace(space, btn) {
+  currentFilter = space;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCalendar();
+}
+
+// ==================== MODALS ====================
+function openEventModal(evJson) {
+  const ev = JSON.parse(evJson);
+  const color = getEventColor(ev);
+  const spaceLabel = SPACES[ev.space]?.label || ev.space;
+  const typeLabel = { fixed: 'Fixo', scheduled: 'Programado (AP)', reservation: 'Reserva Aprovada', pending: 'Aguardando aprovação' }[ev.type] || ev.type;
+
+  let adminActions = '';
+  if (isAdmin && ev.type === 'pending') {
+    adminActions = `
+      <button class="btn btn-success btn-sm" onclick="updateReservationStatus('${ev.id}','approved');closeModal()">✅ Aprovar</button>
+      <button class="btn btn-danger btn-sm" onclick="updateReservationStatus('${ev.id}','rejected');closeModal()">❌ Recusar</button>
+    `;
+  }
+  if (isAdmin && (ev.type === 'fixed' || ev.type === 'scheduled' || ev.type === 'reservation')) {
+    adminActions += `<button class="btn btn-ghost btn-sm" onclick="deleteEvent('${ev.id}','${ev.type}');closeModal()">🗑️ Remover</button>`;
+  }
+
+  showModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">${ev.title}</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-badge" style="background:${color}22;color:${color}">${typeLabel}</div>
+    <div class="modal-info">
+      <div class="modal-info-row"><span class="modal-info-icon">🏛️</span><span>${spaceLabel}</span></div>
+      <div class="modal-info-row"><span class="modal-info-icon">👥</span><span>${ev.department || ev.name || '—'}</span></div>
+      ${ev.date ? `<div class="modal-info-row"><span class="modal-info-icon">📅</span><span>${formatDate(ev.date)}</span></div>` : ''}
+      <div class="modal-info-row"><span class="modal-info-icon">🕐</span><span>${ev.startTime} – ${ev.endTime}</span></div>
+      ${ev.people ? `<div class="modal-info-row"><span class="modal-info-icon">👤</span><span>${ev.people} pessoas</span></div>` : ''}
+      ${ev.description ? `<div class="modal-info-row"><span class="modal-info-icon">📝</span><span>${ev.description}</span></div>` : ''}
+    </div>
+    ${adminActions ? `<div class="modal-actions">${adminActions}</div>` : ''}
+  `);
+}
+
+function openDayModal(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const events = getEventsForDate(d);
+  if (events.length === 0) {
+    if (isAdmin) openAddEventModal(dateStr);
+    return;
+  }
+
+  const days = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  const months = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+  let eventsHtml = events.map(ev => {
+    const color = getEventColor(ev);
+    const spaceLabel = SPACES[ev.space]?.label || ev.space;
+    return `
+      <div class="request-item" onclick="closeModal();setTimeout(()=>openEventModal(${JSON.stringify(JSON.stringify(ev))}),100)" style="cursor:pointer">
+        <div class="request-avatar" style="background:${color}22;color:${color}">${ev.title[0]}</div>
+        <div class="request-info">
+          <div class="request-name">${ev.title}</div>
+          <div class="request-details">${spaceLabel} · ${ev.startTime}–${ev.endTime} · ${ev.department||ev.name||''}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  showModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">${days[d.getDay()]}, ${d.getDate()} de ${months[d.getMonth()]}</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-body">${eventsHtml}</div>
+    </div>
+    ${isAdmin ? `<button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="closeModal();openAddEventModal('${dateStr}')">+ Adicionar evento neste dia</button>` : ''}
+  `);
+}
+
+function openRequestModal(prefillDate) {
+  const today = new Date().toISOString().split('T')[0];
+  showModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">Solicitar Reserva</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">Preencha o formulário. Após enviar, a secretaria receberá sua solicitação pelo WhatsApp.</p>
+    <div class="form-grid">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Seu nome *</label>
+          <input class="form-input" id="reqName" type="text" placeholder="Nome completo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ministério / Departamento *</label>
+          <input class="form-input" id="reqDept" type="text" placeholder="Ex: Ministério da Mulher">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Espaço desejado *</label>
+        <select class="form-select" id="reqSpace" onchange="checkConflictLive()">
+          <option value="">Selecione...</option>
+          <option value="nave">Nave da Igreja</option>
+          <option value="salao_jovens">Salão dos Jovens</option>
+          <option value="sala_seniores">Sala dos Sêniores</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data *</label>
+          <input class="form-input" id="reqDate" type="date" min="${today}" value="${prefillDate||''}" onchange="checkConflictLive()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nº estimado de pessoas</label>
+          <input class="form-input" id="reqPeople" type="number" placeholder="Ex: 30" min="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Horário início *</label>
+          <input class="form-input" id="reqStart" type="time" onchange="checkConflictLive()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horário fim *</label>
+          <input class="form-input" id="reqEnd" type="time" onchange="checkConflictLive()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição do evento *</label>
+        <textarea class="form-textarea" id="reqDesc" placeholder="Descreva brevemente o evento ou reunião"></textarea>
+      </div>
+      <div class="conflict-alert" id="conflictAlert">
+        ⚠️ <div><strong>Conflito detectado!</strong><br><span id="conflictMsg"></span></div>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="submitRequest()">📲 Enviar via WhatsApp</button>
+    </div>
+  `);
+}
+
+function openAddEventModal(prefillDate) {
+  const today = new Date().toISOString().split('T')[0];
+  showModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">Novo Evento</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Título do evento *</label>
+        <input class="form-input" id="addTitle" type="text" placeholder="Ex: Reunião de Diáconos">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Departamento</label>
+          <input class="form-input" id="addDept" type="text" placeholder="Ex: Ministerial">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Espaço *</label>
+          <select class="form-select" id="addSpace">
+            <option value="nave">Nave da Igreja</option>
+            <option value="salao_jovens">Salão dos Jovens</option>
+            <option value="sala_seniores">Sala dos Sêniores</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data *</label>
+        <input class="form-input" id="addDate" type="date" value="${prefillDate||today}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Horário início *</label>
+          <input class="form-input" id="addStart" type="time" value="09:00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horário fim *</label>
+          <input class="form-input" id="addEnd" type="time" value="12:00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" id="addType">
+          <option value="scheduled">Programado</option>
+          <option value="reservation">Reserva Aprovada</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="adminAddEvent()">✅ Salvar Evento</button>
+    </div>
+  `);
+}
+
+function checkConflictLive() {
+  const space = document.getElementById('reqSpace')?.value;
+  const date = document.getElementById('reqDate')?.value;
+  const start = document.getElementById('reqStart')?.value;
+  const end = document.getElementById('reqEnd')?.value;
+  const alert = document.getElementById('conflictAlert');
+  const msg = document.getElementById('conflictMsg');
+  if (!space || !date || !start || !end) { alert.classList.remove('show'); return; }
+  const conflicts = checkConflict(space, date, start, end, null);
+  if (conflicts.length > 0) {
+    msg.textContent = 'Conflito com: ' + conflicts.join(', ');
+    alert.classList.add('show');
+  } else {
+    alert.classList.remove('show');
+  }
+}
+
+async function submitRequest() {
+  const name = document.getElementById('reqName').value.trim();
+  const dept = document.getElementById('reqDept').value.trim();
+  const space = document.getElementById('reqSpace').value;
+  const date = document.getElementById('reqDate').value;
+  const start = document.getElementById('reqStart').value;
+  const end = document.getElementById('reqEnd').value;
+  const people = document.getElementById('reqPeople').value;
+  const desc = document.getElementById('reqDesc').value.trim();
+
+  if (!name || !dept || !space || !date || !start || !end || !desc) {
+    showToast('⚠️ Preencha todos os campos obrigatórios.', 'warning'); return;
+  }
+
+  const conflicts = checkConflict(space, date, start, end, null);
+  if (conflicts.length > 0) {
+    showToast('⚠️ Há conflito de horário. Verifique antes de enviar.', 'warning'); return;
+  }
+
+  const spaceLabel = SPACES[space]?.label || space;
+  const dateFormatted = formatDate(date);
+
+  const msg = encodeURIComponent(
+    `📋 *Nova Solicitação de Reserva*\n\n` +
+    `👤 *Nome:* ${name}\n` +
+    `🏛️ *Ministério:* ${dept}\n` +
+    `📍 *Espaço:* ${spaceLabel}\n` +
+    `📅 *Data:* ${dateFormatted}\n` +
+    `🕐 *Horário:* ${start} – ${end}\n` +
+    `👥 *Pessoas:* ${people || 'Não informado'}\n` +
+    `📝 *Evento:* ${desc}`
+  );
+
+  await saveReservationToSheet({ name, department: dept, space, date, startTime: start, endTime: end, people, description: desc, title: desc });
+  closeModal();
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+  showToast('✅ Solicitação registrada! WhatsApp aberto.', 'success');
+}
+
+// ==================== ADMIN ====================
+function toggleAdmin() {
+  if (isAdmin) {
+    isAdmin = false;
+    document.getElementById('adminBadge').classList.add('hidden');
+    document.getElementById('btnAdmin').textContent = '⚙️ Secretaria';
+    showCalendarView();
+    showToast('Saiu do modo secretaria.', '');
+    return;
+  }
+
+  showModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">Acesso Secretaria</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">Digite a senha para acessar o painel da secretaria.</p>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input class="form-input" id="adminPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-error" id="loginError">Senha incorreta. Tente novamente.</div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+    </div>
+  `);
+  setTimeout(() => document.getElementById('adminPass')?.focus(), 100);
+}
+
+function doLogin() {
+  const pass = document.getElementById('adminPass')?.value;
+  if (pass === ADMIN_PASSWORD) {
+    isAdmin = true;
+    closeModal();
+    document.getElementById('adminBadge').classList.remove('hidden');
+    document.getElementById('btnAdmin').textContent = '🔓 Sair';
+    showAdminView();
+    showToast('✅ Bem-vinda, Secretaria!', 'success');
+  } else {
+    const err = document.getElementById('loginError');
+    if (err) { err.style.display = 'block'; }
+  }
+}
+
+function showAdminView() {
+  document.getElementById('calendarView').classList.add('hidden');
+  document.getElementById('adminView').classList.remove('hidden');
+  document.getElementById('fabBtn').classList.add('hidden');
+  adminTab('pending', document.querySelector('.tab'));
+}
+
+function showCalendarView() {
+  document.getElementById('calendarView').classList.remove('hidden');
+  document.getElementById('adminView').classList.add('hidden');
+  document.getElementById('fabBtn').classList.remove('hidden');
+  renderCalendar();
+}
+
+function adminTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const content = document.getElementById('adminTabContent');
+
+  if (tab === 'pending') {
+    const pending = reservations.filter(r => r.status === 'pending');
+    if (pending.length === 0) {
+      content.innerHTML = '<div class="empty"><div class="empty-icon">🎉</div><p>Nenhuma solicitação pendente!</p></div>';
+      return;
+    }
+    content.innerHTML = '<div class="panel"><div class="panel-body">' +
+      pending.map(r => `
+        <div class="request-item">
+          <div class="request-avatar" style="background:#fb923c22;color:#fb923c">${r.name[0]||'?'}</div>
+          <div class="request-info">
+            <div class="request-name">${r.name} <span class="badge badge-pending">Pendente</span></div>
+            <div class="request-details">${r.department} · ${SPACES[r.space]?.label||r.space} · ${formatDate(r.date)} · ${r.startTime}–${r.endTime} · ${r.people||'?'} pessoas</div>
+            <div class="request-details" style="margin-top:4px">📝 ${r.description}</div>
+          </div>
+          <div class="request-actions">
+            <button class="btn btn-success btn-sm" onclick="updateReservationStatus('${r.id}','approved');adminTab('pending',document.querySelector('.tab'))">✅</button>
+            <button class="btn btn-danger btn-sm" onclick="updateReservationStatus('${r.id}','rejected');adminTab('pending',document.querySelector('.tab'))">❌</button>
+          </div>
+        </div>`).join('') + '</div></div>';
+  }
+
+  if (tab === 'all') {
+    const today = new Date().toISOString().split('T')[0];
+    const upcoming = SCHEDULED_EVENTS.filter(e => e.date >= today).slice(0,20);
+    const approved = reservations.filter(r => r.status === 'approved');
+    const all = [...upcoming, ...approved].sort((a,b) => a.date > b.date ? 1 : -1);
+    content.innerHTML = '<div class="panel"><div class="panel-body">' +
+      (all.length === 0 ? '<div class="empty"><div class="empty-icon">📅</div><p>Nenhum evento próximo.</p></div>' :
+      all.map(ev => {
+        const color = getEventColor(ev);
+        return `<div class="request-item">
+          <div class="request-avatar" style="background:${color}22;color:${color}">${ev.title[0]}</div>
+          <div class="request-info">
+            <div class="request-name">${ev.title}</div>
+            <div class="request-details">${ev.department||ev.name||''} · ${SPACES[ev.space]?.label||ev.space} · ${formatDate(ev.date)} · ${ev.startTime}–${ev.endTime}</div>
+          </div>
+        </div>`;}).join('')) + '</div></div>';
+  }
+
+  if (tab === 'add') {
+    content.innerHTML = `
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Cadastrar novo evento</span></div>
+        <div class="panel-body" style="padding:20px">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Título *</label>
+              <input class="form-input" id="addTitle" type="text" placeholder="Nome do evento">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Departamento</label>
+                <input class="form-input" id="addDept" type="text" placeholder="Ex: JA">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Espaço *</label>
+                <select class="form-select" id="addSpace">
+                  <option value="nave">Nave da Igreja</option>
+                  <option value="salao_jovens">Salão dos Jovens</option>
+                  <option value="sala_seniores">Sala dos Sêniores</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data *</label>
+              <input class="form-input" id="addDate" type="date">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Início *</label>
+                <input class="form-input" id="addStart" type="time" value="09:00">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fim *</label>
+                <input class="form-input" id="addEnd" type="time" value="12:00">
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="adminAddEvent()" style="justify-content:center">✅ Salvar Evento</button>
+          </div>
+        </div>
+      </div>`;
+  }
+}
+
+function adminAddEvent() {
+  const title = document.getElementById('addTitle')?.value.trim();
+  const dept = document.getElementById('addDept')?.value.trim();
+  const space = document.getElementById('addSpace')?.value;
+  const date = document.getElementById('addDate')?.value;
+  const start = document.getElementById('addStart')?.value;
+  const end = document.getElementById('addEnd')?.value;
+
+  if (!title || !space || !date || !start || !end) {
+    showToast('⚠️ Preencha os campos obrigatórios.', 'warning'); return;
+  }
+
+  SCHEDULED_EVENTS.push({
+    id: 'a' + Date.now(), title, department: dept, space, date, startTime: start, endTime: end, type: 'scheduled'
+  });
+  closeModal();
+  renderCalendar();
+  showToast('✅ Evento adicionado!', 'success');
+  adminTab('all', document.querySelectorAll('.tab')[1]);
+}
+
+function deleteEvent(id, type) {
+  if (type === 'scheduled') {
+    const i = SCHEDULED_EVENTS.findIndex(e => e.id === id);
+    if (i >= 0) SCHEDULED_EVENTS.splice(i, 1);
+  } else {
+    const i = reservations.findIndex(r => r.id === id);
+    if (i >= 0) reservations.splice(i, 1);
+  }
+  renderCalendar();
+  showToast('🗑️ Evento removido.', '');
+}
+
+function updatePendingCount() {
+  const count = reservations.filter(r => r.status === 'pending').length;
+  document.getElementById('pendingCount').textContent = count;
+  document.getElementById('pendingCount').style.display = count > 0 ? 'flex' : 'none';
+}
+
+// ==================== UTILS ====================
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const [y,m,d] = dateStr.split('-');
+  const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const days = ['dom','seg','ter','qua','qui','sex','sáb'];
+  const date = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+  return `${days[date.getDay()]}, ${d} de ${months[parseInt(m)-1]} de ${y}`;
+}
+
+function showModal(html) {
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-backdrop" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">${html}</div>
+    </div>`;
+}
+
+function closeModal() {
+  document.getElementById('modalContainer').innerHTML = '';
+}
+
+function showToast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  const colors = { success: 'var(--success)', danger: 'var(--danger)', warning: 'var(--warning)' };
+  if (colors[type]) t.style.borderLeft = `3px solid ${colors[type]}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  renderCalendar();
+  loadReservations();
+  updatePendingCount();
+});
+</script>
+</body>
+</html>
