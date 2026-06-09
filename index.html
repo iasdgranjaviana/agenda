@@ -313,6 +313,13 @@
         </div>
       </div>
       <div id="calGrid"></div>
+      <div id="elderBox" style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:18px">🙏</span>
+        <div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px">Anciões Responsáveis do Mês</div>
+          <div id="elderNames" style="font-size:14px;font-weight:500"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Admin view -->
@@ -346,7 +353,8 @@ const WHATSAPP_NUMBER = '5511970148615';
 const SPACES = {
   nave: { label: 'Nave da Igreja', color: '#4f8ef7' },
   salao_jovens: { label: 'Salão dos Jovens', color: '#a78bfa' },
-  sala_seniores: { label: 'Sala dos Sêniores', color: '#34d399' }
+  sala_seniores: { label: 'Sala dos Sêniores', color: '#34d399' },
+  outros: { label: 'Outro espaço', color: '#8b90a7' }
 };
 
 const TYPE_COLORS = {
@@ -550,6 +558,7 @@ function renderCalendar() {
   if (currentView === 'month') renderMonth();
   else renderWeek();
   renderMiniCal();
+  renderElderBox();
 }
 
 function renderMonth() {
@@ -821,6 +830,7 @@ function openRequestModal(prefillDate) {
           <option value="nave">Nave da Igreja</option>
           <option value="salao_jovens">Salão dos Jovens</option>
           <option value="sala_seniores">Sala dos Sêniores</option>
+          <option value="outros">Outros (especifique na descrição)</option>
         </select>
       </div>
       <div class="form-row">
@@ -1187,6 +1197,30 @@ function showToast(msg, type) {
   t.textContent = msg;
   c.appendChild(t);
   setTimeout(() => t.remove(), 4000);
+}
+
+// ==================== ELDERS ====================
+const ELDERS = {
+  6:  'Marly e Pr. Kleber',
+  7:  'Leandro e Railson',
+  8:  'Flaudemir e Pr. Rogério',
+  9:  'Alexsandra e Rita',
+  10: 'Flaudemir e Rogério',
+  11: 'Alexsandra e Rita',
+  12: 'Marly e Pr. Kleber'
+};
+
+function renderElderBox() {
+  const month = currentDate.getMonth() + 1;
+  const box = document.getElementById('elderBox');
+  const names = document.getElementById('elderNames');
+  if (!box || !names) return;
+  if (ELDERS[month]) {
+    box.style.display = 'flex';
+    names.textContent = ELDERS[month];
+  } else {
+    box.style.display = 'none';
+  }
 }
 
 // ==================== INIT ====================
