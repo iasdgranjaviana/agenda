@@ -595,7 +595,7 @@ function renderMonth() {
     const maxShow = 3;
     events.slice(0, maxShow).forEach(ev => {
       const color = getEventColor(ev);
-      html += `<div class="day-event" style="background:${color}22;color:${color}" onclick="event.stopPropagation();openEventModal(${JSON.stringify(JSON.stringify(ev))})" title="${ev.title} • ${ev.startTime}–${ev.endTime}">${ev.startTime} ${ev.title}</div>`;
+      html += `<div class="day-event" style="background:${color};color:#fff;opacity:0.92" onclick="event.stopPropagation();openEventModal(${JSON.stringify(JSON.stringify(ev))})" title="${ev.title} • ${ev.startTime}–${ev.endTime}">${ev.startTime} ${ev.title}</div>`;
     });
     if (events.length > maxShow) {
       html += `<div class="more-events">+${events.length-maxShow} mais</div>`;
@@ -656,7 +656,7 @@ function renderWeek() {
         const color = getEventColor(ev);
         const dur = timeToMin(ev.endTime) - timeToMin(ev.startTime);
         const height = Math.max(20, (dur / 60) * 48);
-        html += `<div class="week-event" style="background:${color}33;color:${color};border-left:3px solid ${color};height:${height}px" onclick="openEventModal(${JSON.stringify(JSON.stringify(ev))})" title="${ev.title}">${ev.startTime} ${ev.title}</div>`;
+        html += `<div class="week-event" style="background:${color};color:#fff;opacity:0.92;border-left:3px solid ${color};height:${height}px" onclick="openEventModal(${JSON.stringify(JSON.stringify(ev))})" title="${ev.title}">${ev.startTime} ${ev.title}</div>`;
       });
       html += '</div>';
     });
